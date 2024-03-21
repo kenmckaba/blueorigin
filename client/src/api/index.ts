@@ -18,12 +18,10 @@ export const updateAliasById = (id: ID, payload: Alias) =>
 export const deleteAliasById = (id: ID) => api.delete(`/alias/${id}`)
 export const getAliasById = (id: ID) => api.get(`/alias/${id}`)
 
-const apis = {
+export const apis = {
   insertAlias,
   getAllAliases,
   updateAliasById,
   deleteAliasById,
   getAliasById,
 }
-
-export default apis

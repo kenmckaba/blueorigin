@@ -12,6 +12,7 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import { CopyIcon, ExternalLinkIcon } from '@chakra-ui/icons'
+import { insertAlias } from '../api'
 
 const shortUrlPrefix = 'https://short.ly/'
 const doGraphic =
@@ -33,7 +34,7 @@ export const Main = () => {
   }
 
   const launchOrignalUrl = () => {
-    window.open(destinationUrl, 'DOUrlShortenerWindow')
+    window.open(destinationUrl, 'DeepOriginUrlShortenerWindow')
   }
 
   const onChangeUrlToShorten = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,7 +45,9 @@ export const Main = () => {
     setSlug(event.currentTarget.value || '')
   }
 
-  const doShorten = () => {
+  const doShorten = async () => {
+    const result = await insertAlias({ alias: slug, url: urlToShorten })
+    console.log('@ken insertAlias result', result)
     setDestinationUrl('http://' + urlToShorten)
     setSlugToUse(slug)
     setUrlToShorten('')
