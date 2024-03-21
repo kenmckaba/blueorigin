@@ -1,5 +1,7 @@
 FROM node:20
 
+RUN echo "@ken client dockerfile starting"
+
 WORKDIR /usr/src/app
 
 COPY ./package.json ./

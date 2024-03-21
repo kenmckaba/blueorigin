@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import {
   Button,
-  ChakraProvider,
   HStack,
   Heading,
   Image,
@@ -10,9 +9,11 @@ import {
   Text,
   Tooltip,
   VStack,
+  useToast,
 } from '@chakra-ui/react'
 import { CopyIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 import { insertAlias } from '../api'
+import { AxiosError } from 'axios'
 
 const shortUrlPrefix = 'https://short.ly/'
 const doGraphic =
@@ -45,9 +46,27 @@ export const Main = () => {
     setSlug(event.currentTarget.value || '')
   }
 
+  const toast = useToast()
+
   const doShorten = async () => {
-    const result = await insertAlias({ alias: slug, url: urlToShorten })
-    console.log('@ken insertAlias result', result)
+    try {
+      const result = await insertAlias({ alias: slug, url: urlToShorten })
+      console.log('@ken insertAlias result', result)
+    } catch (error) {
+      console.error('@ken insertAlias failed', slug, urlToShorten, error)
+      let message = 'Error saving alias'
+      if (error instanceof AxiosError) {
+        message = error.message
+      }
+      toast({
+        title: 'Error saving alias',
+        description: message,
+        duration: 10000,
+        status: 'error',
+        isClosable: true,
+      })
+    }
+
     setDestinationUrl('http://' + urlToShorten)
     setSlugToUse(slug)
     setUrlToShorten('')
@@ -55,72 +74,70 @@ export const Main = () => {
   }
 
   return (
-    <ChakraProvider>
-      <VStack
-        width={400}
-        margin="auto"
-        padding="10"
-        border="1px"
-        borderRadius="20"
-        height=""
+    <VStack
+      width={400}
+      margin="auto"
+      padding="10"
+      border="1px"
+      borderRadius="20"
+    >
+      <Image
+        src={doGraphic}
+        alt="DeepOrigin logo"
+        width="200px"
+        height="auto"
+        cursor="pointer"
+        onClick={() => window.open(doWebsiteUrl, '_blank')}
+      />
+      <Heading>URL Shortener</Heading>
+      <Input
+        variant="filled"
+        type="text"
+        value={urlToShorten}
+        placeholder="URL to shorten"
+        onChange={onChangeUrlToShorten}
+      />
+      <Input
+        variant="filled"
+        type="text"
+        value={slug}
+        placeholder="Slug to use"
+        onChange={onChangeSlug}
+      />
+      <Button
+        colorScheme="blue"
+        alignSelf="end"
+        onClick={doShorten}
+        isDisabled={urlToShorten.length === 0 || slug.length === 0}
       >
-        <Image
-          src={doGraphic}
-          alt="DeepOrigin logo"
-          width="200px"
-          height="auto"
-          cursor="pointer"
-          onClick={() => window.open(doWebsiteUrl, '_blank')}
-        />
-        <Heading>URL Shortener</Heading>
-        <Input
-          variant="filled"
-          type="text"
-          value={urlToShorten}
-          placeholder="URL to shorten"
-          onChange={onChangeUrlToShorten}
-        />
-        <Input
-          variant="filled"
-          type="text"
-          value={slug}
-          placeholder="Slug to use"
-          onChange={onChangeSlug}
-        />
-        <Button
-          colorScheme="blue"
-          onClick={doShorten}
-          isDisabled={urlToShorten.length === 0 || slug.length === 0}
-        >
-          Shorten
-        </Button>
-        {destinationUrl?.length > 0 && slugToUse?.length && (
-          <>
-            <Text fontWeight="bold">Success!</Text>
-            <HStack>
-              <Link href={destinationUrl}>
-                {shortUrlPrefix}
-                {slugToUse}
-              </Link>
+        Shorten
+      </Button>
+      {destinationUrl?.length > 0 && slugToUse?.length && (
+        <>
+          <Text fontWeight="bold">Success!</Text>
+          <HStack>
+            <Link href={destinationUrl}>
+              {shortUrlPrefix}
+              {slugToUse}
+            </Link>
+            <Tooltip label="Copy to clipboard">
+              <CopyIcon boxSize={4} onClick={saveShortToClipboard} />
+            </Tooltip>
+          </HStack>
+          <Text fontWeight="bold">Redirects to:</Text>
+          <HStack>
+            <Link href={destinationUrl}>{destinationUrl}</Link>
+            <>
               <Tooltip label="Copy to clipboard">
-                <CopyIcon boxSize={4} onClick={saveShortToClipboard} />
+                <CopyIcon boxSize={4} onClick={saveOriginalToClipboard} />
               </Tooltip>
-            </HStack>
-            <Text fontWeight="bold">Redirects to:</Text>
-            <HStack>
-              <Link href={destinationUrl}>{destinationUrl}</Link>
-              <>
-                <Tooltip label="Copy to clipboard">
-                  <CopyIcon boxSize={4} onClick={saveOriginalToClipboard} />
-                </Tooltip>
-                <Tooltip label="Launch">
-                  <ExternalLinkIcon boxSize={4} onClick={launchOrignalUrl} />
-                </Tooltip>
-              </>
-            </HStack>
-          </>
-        )}
-      </VStack>
-    </ChakraProvider>
+              <Tooltip label="Launch">
+                <ExternalLinkIcon boxSize={4} onClick={launchOrignalUrl} />
+              </Tooltip>
+            </>
+          </HStack>
+        </>
+      )}
+    </VStack>
   )
 }
