@@ -1,6 +1,4 @@
-FROM node:20
-
-RUN echo "@ken dockerfile starting"
+FROM node:14-slim
 
 WORKDIR /usr/src/app
 
