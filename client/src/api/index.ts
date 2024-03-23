@@ -12,7 +12,7 @@ export interface Alias {
 type ID = Pick<Alias, 'alias'>
 
 export const insertAlias = (payload: Alias) => api.post('/alias', payload)
-export const getAllAliases = () => api.get('/alias')
+export const getAllAliases = () => api.get('/aliases')
 export const updateAliasById = (id: ID, payload: Alias) =>
   api.put(`/alias/${id}`, payload)
 export const deleteAliasById = (id: ID) => api.delete(`/alias/${id}`)

@@ -14,6 +14,7 @@ import {
 import { CopyIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 import { insertAlias } from '../api'
 import { AxiosError } from 'axios'
+import AliasList from './AliasList'
 
 const shortUrlPrefix = 'https://short.ly/'
 const doGraphic =
@@ -25,12 +26,17 @@ export const Main = () => {
   const [slug, setSlug] = useState('')
   const [destinationUrl, setDestinationUrl] = useState('')
   const [slugToUse, setSlugToUse] = useState('')
+  const [aliasListKey, setAliasListKey] = useState(0)
 
-  const saveShortToClipboard = async () => {
+  const refreshAliasList = () => {
+    setAliasListKey((prev) => prev + 1)
+  }
+
+  const saveAliasToClipboard = async () => {
     await navigator.clipboard.writeText(shortUrlPrefix + slugToUse)
   }
 
-  const saveOriginalToClipboard = async () => {
+  const saveUrlToClipboard = async () => {
     await navigator.clipboard.writeText(destinationUrl)
   }
 
@@ -52,6 +58,14 @@ export const Main = () => {
     try {
       const result = await insertAlias({ alias: slug, url: urlToShorten })
       console.log('@ken insertAlias result', result)
+      refreshAliasList()
+      toast({
+        title: 'Alias saved',
+        description: 'Your alias has been saved',
+        duration: 3000,
+        status: 'success',
+        isClosable: true,
+      })
     } catch (error) {
       console.error('@ken insertAlias failed', slug, urlToShorten, error)
       let message = 'Error saving alias'
@@ -66,7 +80,6 @@ export const Main = () => {
         isClosable: true,
       })
     }
-
     setDestinationUrl('http://' + urlToShorten)
     setSlugToUse(slug)
     setUrlToShorten('')
@@ -121,7 +134,7 @@ export const Main = () => {
               {slugToUse}
             </Link>
             <Tooltip label="Copy to clipboard">
-              <CopyIcon boxSize={4} onClick={saveShortToClipboard} />
+              <CopyIcon boxSize={4} onClick={saveAliasToClipboard} />
             </Tooltip>
           </HStack>
           <Text fontWeight="bold">Redirects to:</Text>
@@ -129,7 +142,7 @@ export const Main = () => {
             <Link href={destinationUrl}>{destinationUrl}</Link>
             <>
               <Tooltip label="Copy to clipboard">
-                <CopyIcon boxSize={4} onClick={saveOriginalToClipboard} />
+                <CopyIcon boxSize={4} onClick={saveUrlToClipboard} />
               </Tooltip>
               <Tooltip label="Launch">
                 <ExternalLinkIcon boxSize={4} onClick={launchOrignalUrl} />
@@ -138,6 +151,7 @@ export const Main = () => {
           </HStack>
         </>
       )}
+      <AliasList key={aliasListKey} />
     </VStack>
   )
 }
